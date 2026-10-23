@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>EDP Focus Point Hackathon</title>
+<meta name="description" content="Informationen zum internen EDP Focus Point Hackathon: Vorhaben, Themen und mögliche Termine.">
+
+<style>
+/* ==========================================================================
+   1. DESIGN TOKENS
+   Alle Farben, Abstände, Radien und Schatten laufen über Custom Properties.
+   ========================================================================== */
+:root {
+  /* MHP Corporate Design (Folie „Colors and Standard Elements“) */
+  --bg:           #FFFFFF;   /* Background */
+  --surface:      #FFFFFF;
+  --surface-2:    #EEF1FF;   /* Tint von Accent 3 (CDD6FF) für Felder und Ergebnis-Boxen */
+  --surface-3:    #E2E7FF;
+  --text:         #262626;   /* Text */
+  --text-2:       #575757;   /* Sekundärtext */
+  --accent:       #1612FF;   /* Accent 2: Überschriften, Auswahl, Sekundär-Pill */
+  --accent-hover: #000099;   /* Accent 1 */
+  --accent-soft:  #CDD6FF;   /* Accent 3 */
+  --kiwi:         #DDEF03;   /* Accent 4: Pill Main, nur 1 pro Ansicht */
+  --grad:         linear-gradient(160deg, #000099 0%, #1612FF 100%); /* Gradient blue background */
+  --danger:       #B42318;   /* Fehlerzustand, kein CI-Farbton, bewusst für Kontrast */
+  --danger-soft:  #FCEDEB;
+  --control:      #575757;   /* Umriss unausgewählter Auswahlmarker */
+  --line:         #B0B0B0;   /* Standard Lines: 0.75pt Grau */
+  --hair:         #D9D9D9;
+
+  /* Abstände */
+  --space-1: .25rem;
+  --space-2: .5rem;
+  --space-3: .75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+
+  /* Radien: Pill (999px) ist die Referenz, große Flächen bleiben deutlich ruhiger */
+  --radius-s: 10px;
+  --radius-m: 16px;
+  --radius-l: 20px;
+
+  /* Schatten (sehr subtil, blau getönt) */
+  --shadow-1: 0 0 0 1px rgba(176, 176, 176, .35), 0 6px 20px rgba(0, 0, 153, .05);
+  --shadow-2: 0 0 0 1px rgba(176, 176, 176, .35), 0 14px 36px rgba(0, 0, 153, .12);
+
+  /* Layout */
+  --max: 1120px;
+  --gutter: clamp(1.25rem, 5vw, 2.5rem);
+  --nav-h: 56px;
+
+  /* Typografie: Segoe UI laut MHP-Master, Fallbacks für macOS/Linux */
+  --font: "Segoe UI", "Segoe UI Variable", -apple-system, BlinkMacSystemFont, "SF Pro Text",
+          Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ==========================================================================
+   2. BASIS
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--nav-h) + 20px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;
+}
+
+[hidden] { display: none !important; }
+
+h1, h2, h3, h4, p, ul, ol, dl, dd, figure { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+ul, ol { padding: 0; list-style: none; }
+img, svg { max-width: 100%; }
+
+.container {
+  width: min(100% - 2 * var(--gutter), var(--max));
+  margin-inline: auto;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: -4rem;
+  z-index: 100;
+  background: var(--surface);
+  color: var(--accent);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-s);
+  box-shadow: var(--shadow-2);
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus { top: var(--space-3); }
+
+/* Typografie-Skala */
+h1 {
+  font-size: clamp(2.5rem, 7.2vw, 4.75rem);
+  line-height: 1.04;
+  letter-spacing: -.025em;
+  font-weight: 400;
+  color: var(--accent);
+}
+h2 {
+  font-size: clamp(1.9rem, 4.4vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  font-weight: 400;
+  color: var(--accent);
+}
+h3 {
+  font-size: 1.25rem;
+  line-height: 1.25;
+  letter-spacing: -.012em;
+  font-weight: 650;
+}
+.lead {
+  font-size: clamp(1.15rem, 2.3vw, 1.5rem);
+  line-height: 1.4;
+  color: var(--text-2);
+  letter-spacing: -.01em;
+}
+.muted { color: var(--text-2); }
+.prose { max-width: 62ch; }
+.prose > * + * { margin-top: var(--space-4); }
+
+/* ==========================================================================
+   3. KOMPONENTEN: Buttons
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: .8rem 1.5rem;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color .18s ease, transform .12s ease, box-shadow .18s ease;
+}
+/* CI-Pills: Main (kiwi, nur 1 pro Ansicht), Secondary (blau), Tertiary (Outline) */
+.btn--main { background: var(--kiwi); color: var(--text); }
+.btn--main:hover { background: #CCDD00; }
+.btn--secondary { background: var(--accent); color: #fff; }
+.btn--secondary:hover { background: var(--accent-hover); }
+.btn--tertiary { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.btn--tertiary:hover { background: var(--accent-soft); }
+.btn--lg { padding: 1rem 2rem; font-size: 1.0625rem; }
+.btn:active { transform: scale(.98); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.link-btn {
+  background: none;
+  border: 0;
+  padding: .25rem .5rem;
+  margin: -.25rem -.5rem;
+  border-radius: 8px;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.link-btn:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.text-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.text-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ==========================================================================
+   4. NAVIGATION (sticky, reduziert)
+   ========================================================================== */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--nav-h);
+  background: rgba(255, 255, 255, .97);
+  transition: box-shadow .2s ease;
+}
+.nav.is-scrolled { box-shadow: 0 1px 0 var(--line); }
+
+.nav__inner {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+}
+.nav__brand {
+  display: none;
+  font-weight: 400;
+  letter-spacing: -.01em;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.nav__links { display: flex; gap: var(--space-1); }
+.nav__links a {
+  display: block;
+  padding: .45rem .7rem;
+  border-radius: 999px;
+  color: var(--text-2);
+  font-size: .92rem;
+  font-weight: 550;
+  text-decoration: none;
+  transition: color .18s ease, background-color .18s ease;
+}
+.nav__brand strong { color: var(--accent); font-weight: 700; letter-spacing: -.01em; }
+.nav__links a:hover { color: var(--text); }
+.nav__links a.is-active { color: var(--accent-hover); background: var(--accent-soft); }
+
+@media (min-width: 640px) {
+  .nav__inner { justify-content: space-between; }
+  .nav__brand { display: block; }
+  .nav__links a { padding: .45rem .95rem; font-size: .95rem; }
+}
+@media (min-width: 900px) {
+  }
+
+/* ==========================================================================
+   5. HERO
+   ========================================================================== */
+.hero {
+  padding-block: clamp(2.5rem, 7vw, 6rem) clamp(2.5rem, 6vw, 4.5rem);
+}
+.hero__grid {
+  display: grid;
+  gap: clamp(2.5rem, 6vw, 4rem);
+  align-items: center;
+}
+.hero__grid > * { min-width: 0; }
+.hero__text .lead { margin-top: var(--space-5); max-width: 28ch; }
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-5);
+  margin-top: var(--space-6);
+}
+@media (min-width: 960px) {
+  .hero__grid { grid-template-columns: 1.05fr .95fr; }
+}
+
+/* Abhängigkeitsgraph: der eine Moment, der Aufmerksamkeit bekommt */
+.graph {
+  background: var(--grad);
+  border-radius: var(--radius-l);
+  padding: clamp(1rem, 3vw, 1.75rem);
+  color: #fff;
+}
+.graph svg { display: block; width: 100%; height: auto; }
+.edge { fill: none; stroke: rgba(255, 255, 255, .32); stroke-width: 1.5; stroke-linecap: round; }
+.edge--hot { stroke: #fff; stroke-width: 2.5; }
+.hk-fill { fill: rgba(255, 255, 255, .10); }
+.hk-dot { fill: rgba(255, 255, 255, .55); }
+.hk-rule { stroke: rgba(255, 255, 255, .3); stroke-width: 1.5; }
+.hk-bar { fill: #fff; }
+.hk-bar--dim { fill: rgba(255, 255, 255, .45); }
+.hk-bar--kiwi { fill: var(--kiwi); }   /* der eine Akzent im Bild */
+.hk-glyph { fill: none; stroke: #fff; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.hk-person { fill: #fff; }
+.hk-start { fill: #fff; }
+.hk-end { fill: var(--kiwi); }
+.hk-label { fill: #fff; font-family: var(--font); font-size: 14px; }
+
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes appear { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: no-preference) {
+  .edge { stroke-dasharray: 1; animation: draw .8s ease-out backwards; animation-delay: var(--d, 0s); }
+  .appear { animation: appear .5s ease-out backwards; animation-delay: var(--d, 0s); }
+}
+
+/* ==========================================================================
+   6. SEKTIONEN, PANELS
+   ========================================================================== */
+.section { padding-block: clamp(3rem, 7vw, 5.5rem); }
+.section-head { max-width: 46rem; margin-bottom: clamp(2rem, 5vw, 3.25rem); }
+.section-head > p { margin-top: var(--space-4); }
+
+.panel {
+  background: var(--surface);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-1);
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+/* Ausgangssituation */
+.story { display: grid; gap: var(--space-5); }
+@media (min-width: 900px) {
+  .story { grid-template-columns: 5fr 7fr; gap: var(--space-8); }
+}
+.story .prose p:first-child { font-size: 1.2rem; color: var(--text); }
+.story .prose p { color: var(--text-2); }
+.story .prose p:first-child { color: var(--text); }
+
+/* Ziele */
+.goals { margin-top: clamp(2.5rem, 6vw, 4rem); }
+.goals h2 { font-size: clamp(1.6rem, 3.4vw, 2.2rem); }
+.goals__list {
+  display: grid;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+.goals__item::before {
+  content: "";
+  display: block;
+  width: 2rem;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--accent);
+  margin-bottom: var(--space-4);
+}
+.goals__item p { font-size: 1.2rem; line-height: 1.35; font-weight: 600; letter-spacing: -.012em; max-width: 24ch; }
+@media (min-width: 800px) {
+  .goals__list { grid-template-columns: repeat(3, 1fr); gap: var(--space-7); }
+}
+
+/* ==========================================================================
+   7. THEMEN-AUFLISTUNG
+   ========================================================================== */
+.topics { display: grid; }
+.topic {
+  display: grid;
+  grid-template-columns: 2.75rem 1fr;
+  gap: var(--space-4) var(--space-4);
+  padding-block: var(--space-6);
+  box-shadow: inset 0 1px 0 var(--line);   /* Standard Line: 0.75pt Grau */
+}
+.topic:last-child { box-shadow: inset 0 1px 0 var(--line), inset 0 -1px 0 var(--line); }
+.topic > * { min-width: 0; }
+.topic__no {
+  font-size: clamp(2.4rem, 6vw, 3.75rem);
+  line-height: 1;
+  font-weight: 300;
+  letter-spacing: -.03em;
+  color: var(--accent);
+}
+.topic__title {
+  font-size: clamp(1.35rem, 2.6vw, 1.75rem);
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -.015em;
+  color: var(--text);
+}
+.topic__desc { margin-top: var(--space-3); max-width: 64ch; color: var(--text-2); }
+.topic__cols { display: grid; gap: var(--space-5); margin-top: var(--space-5); }
+.topic__cols > * { min-width: 0; }
+.topic__sub { margin-bottom: var(--space-2); font-size: .95rem; font-weight: 650; color: var(--text); }
+.topic__list { padding-left: 1.1rem; list-style: disc; font-size: .98rem; }
+.topic__list li + li { margin-top: .3rem; }
+.topic__list li::marker { color: var(--accent); }
+.topic__result {
+  align-self: start;
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface-2);
+  border-radius: var(--radius-s);
+  font-size: .98rem;
+}
+@media (min-width: 800px) {
+  .topic { grid-template-columns: 5rem 1fr; }
+  .topic__cols { grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+}
+
+/* ==========================================================================
+   8. TERMINÜBERSICHT
+   ========================================================================== */
+.grid-dates { display: grid; gap: var(--space-5); }
+.grid-dates > * { min-width: 0; }
+@media (min-width: 640px) { .grid-dates { grid-template-columns: repeat(3, 1fr); } }
+
+.date {
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  background: var(--surface);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-1);
+}
+.date__when { display: flex; flex-direction: column; }
+.date__weekday { color: var(--text-2); font-weight: 550; }
+.date__day { margin-top: var(--space-2); font-size: 3.4rem; line-height: 1; font-weight: 300; letter-spacing: -.04em; color: var(--accent); }
+.date__month { margin-top: var(--space-1); font-weight: 600; }
+.date__time {
+  display: inline-block;
+  margin-top: var(--space-4);
+  padding: .25rem .75rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: .9rem;
+  font-weight: 550;
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  border-radius: var(--radius-s);
+  font-weight: 600;
+}
+.notice svg { flex: none; margin-top: 2px; }
+
+/* ==========================================================================
+   11. FOOTER
+   ========================================================================== */
+.footer { padding-block: var(--space-6) var(--space-7); box-shadow: inset 0 1px 0 var(--line); color: var(--text-2); font-size: .93rem; }
+.footer p { max-width: 62ch; }
+.footer p + p { margin-top: var(--space-2); }
+</style>
+</head>
+
+<body id="top">
+<a class="skip-link" href="#vorhaben">Zum Inhalt springen</a>
+
+<noscript>
+  <p style="padding:1rem;text-align:center;background:#FCEDEB;color:#B42318">
+    Für die Themen- und Terminübersicht wird JavaScript benötigt. Bitte aktiviere JavaScript in deinem Browser.
+  </p>
+</noscript>
+
+<!-- ======================= NAVIGATION ======================= -->
+<header class="nav" id="nav">
+  <div class="container nav__inner">
+    <a class="nav__brand" href="#top"><strong>MHP</strong> EDP Focus Points</a>
+    <nav aria-label="Hauptnavigation">
+      <ul class="nav__links">
+        <li><a href="#vorhaben" data-nav="vorhaben">Vorhaben</a></li>
+        <li><a href="#themen" data-nav="themen">Themen</a></li>
+        <li><a href="#termine" data-nav="termine">Termine</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ======================= 1. HERO ======================= -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container hero__grid">
+      <div class="hero__text">
+        <h1 id="hero-title">EDP Focus Point Hackathon</h1>
+        <p class="lead">One team. One challenge. One day to move our migration platform forward.</p>
+        <div class="hero__cta">
+          <a class="btn btn--main btn--lg" href="#themen">Themen ansehen</a>
+          <a class="text-link" href="#vorhaben">Das Vorhaben</a>
+        </div>
+      </div>
+
+      <!-- Visual: Hackathon = ein Team, eine Aufgabe, ein Tag (08:00 bis 18:00 Uhr) -->
+      <figure class="graph">
+        <svg viewBox="0 0 540 370" role="img"
+             aria-label="Illustration eines Hackathons: Drei Teammitglieder arbeiten gemeinsam in einem Code-Editor an einem Prototyp, innerhalb eines Tages von 08:00 bis 18:00 Uhr.">
+          <!-- Editor-Fenster: die eine Aufgabe -->
+          <rect class="hk-fill appear" x="90" y="40" width="360" height="210" rx="14" style="--d:0s"/>
+          <rect class="edge edge--hot" pathLength="1" x="90" y="40" width="360" height="210" rx="14" style="--d:.1s;stroke-width:1.75"/>
+          <g class="appear" style="--d:.5s">
+            <circle class="hk-dot" cx="114" cy="64" r="4.5"/>
+            <circle class="hk-dot" cx="131" cy="64" r="4.5"/>
+            <circle class="hk-dot" cx="148" cy="64" r="4.5"/>
+            <path class="hk-rule" d="M90 86 H450"/>
+          </g>
+          <!-- Code-Zeilen -->
+          <g>
+            <rect class="hk-bar appear" style="--d:.7s"  x="114" y="108" width="80"  height="9" rx="4.5"/>
+            <rect class="hk-bar hk-bar--kiwi appear" style="--d:.8s" x="204" y="108" width="52" height="9" rx="4.5"/>
+            <rect class="hk-bar hk-bar--dim appear" style="--d:.9s" x="134" y="134" width="112" height="9" rx="4.5"/>
+            <rect class="hk-bar hk-bar--dim appear" style="--d:1.0s" x="134" y="160" width="52" height="9" rx="4.5"/>
+            <rect class="hk-bar appear" style="--d:1.05s" x="196" y="160" width="78" height="9" rx="4.5"/>
+            <rect class="hk-bar hk-bar--dim appear" style="--d:1.1s" x="114" y="186" width="62" height="9" rx="4.5"/>
+            <rect class="hk-bar hk-bar--dim appear" style="--d:1.15s" x="186" y="186" width="42" height="9" rx="4.5"/>
+            <rect class="hk-bar hk-bar--dim appear" style="--d:1.2s" x="114" y="212" width="100" height="9" rx="4.5"/>
+          </g>
+          <!-- Code-Symbol: der Prototyp -->
+          <path class="hk-glyph appear" style="--d:1.3s" d="M372 128 L348 160 L372 192 M424 128 L448 160 L424 192 M406 122 L390 198" transform="translate(-14 0)"/>
+          <!-- Team: drei Personen arbeiten gemeinsam an der Aufgabe -->
+          <path class="edge" pathLength="1" style="--d:1.0s" d="M180 250 V286 M270 250 V286 M360 250 V286"/>
+          <path class="edge" pathLength="1" style="--d:1.2s" d="M180 286 H360"/>
+          <g class="appear" style="--d:1.3s">
+            <circle class="hk-person" cx="180" cy="286" r="11"/>
+            <circle class="hk-person" cx="270" cy="286" r="11"/>
+            <circle class="hk-person" cx="360" cy="286" r="11"/>
+          </g>
+          <!-- Ein Tag: 08:00 bis 18:00 Uhr -->
+          <path class="edge edge--hot" pathLength="1" style="--d:1.4s;stroke-width:2" d="M90 330 H450"/>
+          <circle class="hk-start appear" style="--d:1.4s" cx="90" cy="330" r="6"/>
+          <circle class="hk-end appear" style="--d:2.2s" cx="450" cy="330" r="8"/>
+          <text class="hk-label" x="90" y="358">08:00</text>
+          <text class="hk-label" x="450" y="358" text-anchor="end">18:00 Uhr</text>
+        </svg>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ 2. AUSGANGSSITUATION + 3. ZIEL ============ -->
+  <section class="section" id="vorhaben" aria-labelledby="vorhaben-title">
+    <div class="container">
+      <div class="story">
+        <h2 id="vorhaben-title">Warum wir einen eigenen Hackathon machen</h2>
+        <div class="prose">
+          <p>Zu Beginn des Jahres haben wir gemeinsam mit den Stakeholdern im Cluster nach einem passenden Hackathon-Thema für die EDP Focus Points gesucht. Dabei ist bislang kein gemeinsames Schwerpunktthema entstanden.</p>
+          <p>Damit wir das Ziel des Focus Points dennoch erreichen und die Weiterentwicklung unseres Migrationsteams aktiv vorantreiben, möchten wir den vorgesehenen Rahmen für einen eigenen Hackathon nutzen.</p>
+          <p>Im Mittelpunkt steht eine konkrete technische Herausforderung aus unserem Arbeitsalltag. Gemeinsam entwickeln wir innerhalb eines Tages einen Prototyp, schaffen neue technische Erkenntnisse und leiten mögliche nächste Schritte für unsere Migrationsplattform ab.</p>
+        </div>
+      </div>
+
+      <div class="panel goals" aria-labelledby="ziel-title">
+        <h2 id="ziel-title">Unser Ziel</h2>
+        <ul class="goals__list">
+          <li class="goals__item"><p>Einen funktionsfähigen technischen Prototyp entwickeln</p></li>
+          <li class="goals__item"><p>Wissen und Erfahrungen innerhalb des Migrationsteams bündeln</p></li>
+          <li class="goals__item"><p>Eine Entscheidungsgrundlage für die weitere Produktentwicklung schaffen</p></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= 4. THEMEN ======================= -->
+  <section class="section" id="themen" aria-labelledby="themen-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="themen-title">Drei Hackathon-Themen</h2>
+        <p class="lead">Drei konkrete technische Herausforderungen aus unserem Arbeitsalltag. Die Abstimmung darüber findet separat statt.</p>
+      </div>
+      <ol class="topics" id="topic-list"><!-- per JS aus TOPICS gerendert --></ol>
+    </div>
+  </section>
+
+  <!-- ======================= 5. TERMINE ======================= -->
+  <section class="section" id="termine" aria-labelledby="termine-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="termine-title">Mögliche Termine</h2>
+        <p class="lead">Der Hackathon dauert einen ganzen Tag.</p>
+      </div>
+      <p class="notice" role="note">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="currentColor"/><path d="M10 9v5" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="6" r="1.2" fill="#fff"/></svg>
+        <span>Die Terminabstimmung findet separat statt.</span>
+      </p>
+      <ul class="grid-dates" id="date-list"><!-- per JS aus DATES gerendert --></ul>
+    </div>
+  </section>
+</main>
+
+<!-- ======================= 10. FOOTER ======================= -->
+<footer class="footer">
+  <div class="container">
+    <p>EDP Focus Points, internes Hackathon-Vorhaben des Migrationsteams.</p>
+    <p>© MHP Management- und IT-Beratung GmbH</p>
+  </div>
+</footer>
+
+<script>
+/* ==========================================================================
+   JAVASCRIPT (Vanilla): rendert Themen und Termine und markiert den aktiven
+   Navigationspunkt. Es werden keine Daten gespeichert oder gesendet.
+   ========================================================================== */
+(() => {
+  'use strict';
+
+  const TIME_RANGE = '08:00–18:00 Uhr';
+
+  // „Pearl“ ist eine interne Bezeichnung und bleibt exakt so geschrieben.
+  const TOPICS = [
+    {
+      id: 'pearl-python', number: 1,
+      title: 'From Pearl to Modern Python Architecture',
+      description: 'Ein bestehender, eigenentwickelter Modellierungs- und Verarbeitungskern soll schrittweise in eine moderne, modulare Python-Architektur überführt werden. Im Hackathon untersuchen wir, wie zentrale Komponenten fachlich getrennt, technisch modernisiert und langfristig besser wartbar gestaltet werden können.',
+      benefits: [
+        'bessere Wartbarkeit',
+        'klarere Verantwortlichkeiten innerhalb der Architektur',
+        'bessere Testbarkeit',
+        'Grundlage für zukünftige Erweiterungen und KI-Integration'
+      ],
+      result: 'Ein prototypischer Python-Architekturbaustein inklusive Zielstruktur, Schnittstellen und dokumentiertem Migrationspfad.'
+    },
+    {
+      id: 'data-model-explorer', number: 2,
+      title: 'Data Model Explorer and Dependency Graph',
+      description: 'Entwicklung eines generischen Ansatzes, mit dem die Struktur eines frei wählbaren Datenmodells automatisiert ausgelesen und als verständlicher Abhängigkeitsgraph dargestellt werden kann. Dadurch sollen Tabellen, Entitäten, Beziehungen und Abhängigkeiten des aktuellen Datenbestands schneller nachvollziehbar werden.',
+      benefits: [
+        'Transparenz über den Ist-Zustand der Daten',
+        'schnelleres Verständnis unbekannter Datenmodelle',
+        'Aufdeckung technischer und fachlicher Abhängigkeiten',
+        'Unterstützung bei Analyse, Migration und Fehlerbehebung'
+      ],
+      result: 'Ein Prototyp, der ein Beispieldatenmodell analysiert und dessen Struktur sowie Abhängigkeiten interaktiv visualisiert.'
+    },
+    {
+      id: 'dependency-aware-mapping', number: 3,
+      title: 'Dependency-Aware Mapping Execution',
+      description: 'Optimierung der Mapping-Ausführung durch eine intelligente Erkennung veränderter Abhängigkeiten. Untersucht werden soll, welche Mappings nach einer Änderung tatsächlich erneut ausgeführt werden müssen und welche Ergebnisse weiterhin verwendet werden können.',
+      benefits: [
+        'kürzere Ausführungszeiten',
+        'Vermeidung unnötiger Mapping-Läufe',
+        'gezielte Verarbeitung betroffener Abhängigkeiten',
+        'bessere Skalierbarkeit komplexer Mapping-Ketten'
+      ],
+      result: 'Ein technischer Prototyp für Change Detection und die selektive Ausführung betroffener Mappings innerhalb eines Dependency Graphs.'
+    }
+  ];
+
+  const fmt = {
+    weekday:   new Intl.DateTimeFormat('de-DE', { weekday: 'long' }),
+    monthYear: new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric' }),
+    full:      new Intl.DateTimeFormat('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  };
+  const DATES = ['2026-12-03', '2026-12-08', '2026-12-10'].map(iso => {
+    const [y, m, d] = iso.split('-').map(Number);
+    const date = new Date(y, m - 1, d, 12); // 12 Uhr vermeidet Zeitzonen-Randfälle
+    return { iso, day: d, weekday: fmt.weekday.format(date), monthYear: fmt.monthYear.format(date), full: fmt.full.format(date) };
+  });
+
+  const $  = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+  /* ---------- Themen als Auflistung ---------- */
+  $('#topic-list').innerHTML = TOPICS.map(t => `
+    <li class="topic">
+      <span class="topic__no" aria-hidden="true">${t.number}</span>
+      <div>
+        <h3 class="topic__title"><span class="sr-only">Thema ${t.number}: </span>${t.title}</h3>
+        <p class="topic__desc">${t.description}</p>
+        <div class="topic__cols">
+          <div>
+            <h4 class="topic__sub">Nutzen</h4>
+            <ul class="topic__list">${t.benefits.map(b => `<li>${b}</li>`).join('')}</ul>
+          </div>
+          <div class="topic__result">
+            <h4 class="topic__sub">Erwartetes Ergebnis</h4>
+            <p>${t.result}</p>
+          </div>
+        </div>
+      </div>
+    </li>`).join('');
+
+  /* ---------- Termine ---------- */
+  $('#date-list').innerHTML = DATES.map(d => `
+    <li class="date">
+      <time class="date__when" datetime="${d.iso}" aria-label="${d.full}">
+        <span class="date__weekday">${d.weekday}</span>
+        <span class="date__day">${d.day}</span>
+        <span class="date__month">${d.monthYear}</span>
+      </time>
+      <span class="date__time">${TIME_RANGE}</span>
+    </li>`).join('');
+
+  /* ---------- Navigation: aktiver Bereich ---------- */
+  const navLinks = $$('.nav__links a');
+  const sections = navLinks.map(a => document.getElementById(a.dataset.nav));
+
+  function updateActive() {
+    const line = window.innerHeight * 0.35;
+    let active = null;
+    sections.forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (r.top <= line && r.bottom > line) active = el.id;
+    });
+    navLinks.forEach(a => {
+      const on = a.dataset.nav === active;
+      a.classList.toggle('is-active', on);
+      if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+    });
+    $('#nav').classList.toggle('is-scrolled', window.scrollY > 8);
+  }
+
+  let ticking = false;
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { updateActive(); ticking = false; });
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  updateActive();
+})();
+</script>
+</body>
+</html>
